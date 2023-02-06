@@ -1,6 +1,7 @@
 """Example file for running spa"""
 
 from spa import fs_data as fsd
+from spa import exf_data as exfd
 import llvmlite.binding as llvm
 import llvmlite.ir as ir
 
@@ -22,3 +23,17 @@ print(fsd.get_block('main', 'entry'))
 
 print('For List:')
 print(fsd.for_list)
+
+print('Not in for:')
+print(fsd.not_for_list())
+
+exfd = exfd.exf_data(module)
+
+print('Variables')
+print(exfd.variables)
+
+print('Text')
+print(exfd.text)
+
+print('Base Variables')
+print(exfd.base_variables)

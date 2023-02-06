@@ -61,6 +61,25 @@ class fs_data:
         except:
             return None
 
+    
+    """
+    Get the blocks that are not part of for loops
+    :return dict: list of blocks in each function
+    """
+    def not_for_list(self):
+        data = self.block_list
+        
+        for func, b_list in data.items():
+            for start_b, dt in self.for_list[func].items():
+                try:
+                    start = data[func].index(start_b)
+                    end = data[func].index(dt['end_bb'])
+                    data[func] = data[func][:start] + data[func][end+1:]
+                except:
+                    pass
+
+        return data
+
 
     """
     Get all the for loops and related data
