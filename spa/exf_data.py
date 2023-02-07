@@ -3,6 +3,7 @@
 import llvmlite.binding as llvm
 import llvmlite.ir as ir
 import re
+import math
 
 class exf_data:
     module = None
@@ -10,7 +11,7 @@ class exf_data:
     variables = None
     base_variables = {}
     func_name = None
-    bb_execution = None
+    bb_execution = 0
 
     """
     Initiate the init function that load ll and fetch data
@@ -144,6 +145,63 @@ class exf_data:
                         
                     if inst.opcode == 'add':
                         self.opcode_add(string, self.base_variables)
+
+    
+    """
+    Get the probable iteration number
+    :param start: Starting point
+    :param end: Ending point
+    :param inc: Incriment
+    :return : iteration number or dependency
+    """
+    def iteration_count(self, start, end, inc):
+        start_s = str(start)
+        end_s = str(end)
+        inc_s = str(inc)
+        try:
+            #count = abs(eval(start - end))
+            #return count
+            #return math.floor(count)
+            count = abs((eval(start_s) - eval(end_s)) / eval(inc_s))
+            return math.floor(count)
+        except:
+            output = 'f('
+            start_f = end_f = ''
+            try:
+                start_f = int(start)
+            except:
+                start_f = start
+
+            try:
+                end_f = int(end)
+            except:
+                end_f = end
+
+            if not isinstance(start_f, int):
+                output += str(start_f) + ', '
+            if not isinstance(end_f, int):
+                output += str(end_f)
+
+            output += ')'
+            return output
+
+    
+    """
+    Count the probable basic block executions for loop
+    :param iteration: Iteration of loop
+    :param bb_count: Number of blocks
+    :return : Probable basic block executions
+    """
+    def bb_execution_for(self, iteration, bb_count):
+        count = 'NA'
+        try:
+            if isinstance(iteration, int) and isinstance(bb_count, int):
+                count = (iteration * (bb_count - 1)) + 1
+            else:
+                count = str(bb_count - 1) + '*' + str(iteration)
+            return count
+        except:
+            return count
     
     
     """
@@ -174,14 +232,29 @@ class exf_data:
                     # Operation if for condition found
                     if bb.name in for_cond_list[func.name]:
                         self.calculate_variables(self.variables)
-                        degree = for_list[func.name][bb.name]['nested_degree']
+                        degree = for_list[func.name][bb.name].get('nested_degree', 1)
                         nested = ', Nested: ' + str(for_list[func.name][bb.name]['nested_for']) if len(for_list[func.name][bb.name]['nested_for']) > 0 else ''
                         inc = int(for_list[func.name][bb.name].get('inc', 1))
                         start = self.get_val(for_list[func.name][bb.name]['start'], self.base_variables)
                         end = self.get_val(for_list[func.name][bb.name]['end'], self.base_variables)
+                        iteration_count = self.iteration_count(start, end, inc)
+                        bb_count = for_list[func.name][bb.name].get('block_count', 'NA')
+                        execution = self.bb_execution_for(iteration_count, bb_count)
 
-                        self.text += 'for: ' + str(bb.name) + ', Degree: ' + str(degree) + nested + ', Start: ' + str(start) + ', End: ' + str(end) + '\n'
+                        self.text += 'for: ' + str(bb.name) + ', Degree: ' + str(degree) + nested + ', Start: ' + str(start) + ', End: ' + str(end) + ', Probable Iteration: ' + str(iteration_count)  + ', Probable BB Execution: ' + str(execution) + '\n'
                         # self.text += str(self.variables) + '\n'
+
+                        try:
+                            if isinstance(self.bb_execution, int) and isinstance(execution, int):
+                                self.bb_execution += execution
+                            else:
+                                if self.bb_execution == 0:
+                                    self.bb_execution = ''
+                                self.bb_execution = str(self.bb_execution) + ' + ' + str(execution)
+                        except:
+                            if self.bb_execution == 0:
+                                self.bb_execution = ''
+                            self.bb_execution = str(self.bb_execution) + ' + ' +  str(bb.name)
 
                     for inst in bb.instructions:
                         string = str(inst).strip()

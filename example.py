@@ -12,20 +12,20 @@ module = llvm.parse_assembly(ir_str)
 
 fsd = fsd.fs_data(module)
 
-print('Function List:')
-print(fsd.function_list)
+# print('Function List:')
+# print(fsd.function_list)
 
-print('Block List:')
-print(fsd.block_list)
+# print('Block List:')
+# print(fsd.block_list)
 
-print('Specific Block, Entry of main function:')
-print(fsd.get_block('main', 'entry'))
+# print('Specific Block, Entry of main function:')
+# print(fsd.get_block('main', 'entry'))
 
 print('For List:')
 print(fsd.for_list)
 
-print('Not in for:')
-print(fsd.not_for_list())
+# print('Not in for:')
+# print(fsd.not_for_list())
 
 exfd = exfd.exf_data(module)
 
@@ -35,5 +35,8 @@ print(exfd.variables)
 print('Text')
 print(exfd.text)
 
-print('Base Variables')
-print(exfd.base_variables)
+# print('Base Variables')
+# print(exfd.base_variables)
+
+print('Total BB Execution')
+print(exfd.bb_execution)
