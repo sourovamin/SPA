@@ -4,11 +4,18 @@ from spa import fs_data as fsd
 from spa import exf_data as exfd
 import llvmlite.binding as llvm
 import llvmlite.ir as ir
+import sys
 
- # Load an LL file
-with open('example.ll', 'r') as f:
-    ir_str = f.read()
-module = llvm.parse_assembly(ir_str)
+input_file = sys.argv[1]
+
+# Load an LL file
+try:
+    with open(input_file, 'r') as f:
+        ir_str = f.read()
+    module = llvm.parse_assembly(ir_str)
+except:
+    print('Invalid input file!')
+    sys.exit()
 
 fsd = fsd.fs_data(module)
 
