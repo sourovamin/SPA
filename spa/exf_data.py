@@ -12,6 +12,7 @@ class exf_data:
     base_variables = {}
     func_name = None
     bb_execution = 0
+    for_iteration = None
 
     """
     Initiate the init function that load ll and fetch data
@@ -154,7 +155,7 @@ class exf_data:
     :param inc: Incriment
     :return : iteration number or dependency
     """
-    def iteration_count(self, start, end, inc):
+    def iteration_count(self, start, end, inc, parent_iteration=None):
         start_s = str(start)
         end_s = str(end)
         inc_s = str(inc)
@@ -163,9 +164,14 @@ class exf_data:
             #return count
             #return math.floor(count)
             count = abs((eval(start_s) - eval(end_s)) / eval(inc_s))
+            if parent_iteration:
+                count = parent_iteration * count
             return math.floor(count)
         except:
-            output = 'f('
+            output = ''
+            if parent_iteration:
+                output += str(parent_iteration) + ' * '
+            output += 'f('
             start_f = end_f = ''
             try:
                 start_f = int(start)
@@ -237,11 +243,21 @@ class exf_data:
                         inc = int(for_list[func.name][bb.name].get('inc', 1))
                         start = self.get_val(for_list[func.name][bb.name]['start'], self.base_variables)
                         end = self.get_val(for_list[func.name][bb.name]['end'], self.base_variables)
-                        iteration_count = self.iteration_count(start, end, inc)
+                        parent = for_list[func.name][bb.name].get('parent', None)
+                        parent_text = ', Parent: ' + str(parent) if parent else ''
+                        parent_iteration = for_list[func.name][parent].get('iteration', None) if parent else None
+                        # Self iteration count
+                        self_iteration = self.iteration_count(start, end, inc)
+                        # Total iteration count considering parent iteration
+                        iteration_count = self.iteration_count(start, end, inc, parent_iteration)
+                        # Modify for list
+                        for_list[func.name][bb.name]['iteration'] = iteration_count
                         bb_count = for_list[func.name][bb.name].get('block_count', 'NA')
                         execution = self.bb_execution_for(iteration_count, bb_count)
+                        # Modify for list
+                        for_list[func.name][bb.name]['block_exec'] = execution
 
-                        self.text += 'for: ' + str(bb.name) + ', Degree: ' + str(degree) + nested + ', Start: ' + str(start) + ', End: ' + str(end) + ', Probable Iteration: ' + str(iteration_count)  + ', Probable BB Execution: ' + str(execution) + '\n'
+                        self.text += 'for: ' + str(bb.name) + ', Degree: ' + str(degree) + nested + parent_text + ', Start: ' + str(start) + ', End: ' + str(end)+ ', Probable Self Iteration: ' + str(self_iteration) + ', Probable Iteration: ' + str(iteration_count)  + ', Probable BB Execution: ' + str(execution) + '\n'
                         # self.text += str(self.variables) + '\n'
 
                         try:
@@ -267,7 +283,8 @@ class exf_data:
                         
                         if inst.opcode == 'add':
                             self.opcode_add(string, self.variables)
-                            
+
+        self.for_iteration = for_list                    
 
 
         

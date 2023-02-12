@@ -172,6 +172,7 @@ class fs_data:
                         if 'for.cond' in item:
                             nested_degree = nested_degree + 1
                             nested_for.append(item)
+                            for_list[func][item]['parent'] = for_block
 
                     for_list[func][for_block]['nested_degree'] = nested_degree
                     for_list[func][for_block]['nested_for'] = nested_for
@@ -180,5 +181,3 @@ class fs_data:
                     pass
         
         return for_list
-
-
