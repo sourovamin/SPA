@@ -5,6 +5,8 @@ import llvmlite.ir as ir
 import re
 import math
 
+from spa import operation as op
+
 class exf_data:
     module = None
     text = ''
@@ -13,6 +15,7 @@ class exf_data:
     func_name = None
     bb_execution = 0
     for_iteration = None
+    ops = None
 
     """
     Initiate the init function that load ll and fetch data
@@ -24,23 +27,12 @@ class exf_data:
         self.module = module
         self.variables = variables
         self.func_name = func_name
+        self.ops = op.operation().ops
 
         self.base_iteration()
         self.calculate_variables(self.base_variables)
         self.main_iteration()
         self.calculate_variables(self.variables)
-
-
-    """
-    Update the variable value with previously stored value
-    :param val: Input value
-    :param val: Input variables
-    :return : Refined value using stored variables
-    """
-    def refine_val(self, val, variables):
-        if val in variables:
-            val = variables[val]
-        return val
 
     
     """
@@ -82,52 +74,6 @@ class exf_data:
 
 
     """
-    Calculate for the opcode store
-    :param string: Instruction string
-    """
-    def opcode_store(self, string, variables):
-        # Pattern to get variable name and value
-        # store i32 0, i32* %sum, align 4
-        words = string.split()
-        output = [words[2].strip(','), words[4].strip(',')]
-                            
-        if output[0] and output[1]:
-            output[0] = self.refine_val(output[0], variables)
-            variables[output[1]] = output[0]
-
-
-    """
-    Calculate for the opcode load
-    :param string: Instruction string
-    """
-    def opcode_load(self, string, variables):
-        # Pattern to get variable name and value
-        # %1 = load i32, i32* %a, align 4
-        words = string.split()
-        output = [word for word in words if word.startswith('%')]
-        output = [x.strip(",") for x in output]
-
-        if output[0] and output[1]:
-            output[1] = self.refine_val(output[1], variables)
-            variables[output[0]] = output[1]
-
-
-    """
-    Calculate for the opcode add
-    :param string: Instruction string
-    """
-    def opcode_add(self, string, variables):
-        words = string.split()
-        output = [words[0]] + words[-2:]
-        output = [x.strip(",") for x in output]
-
-        if output[0] and output[1] and output[2]:
-            output[1] = self.refine_val(output[1], variables)
-            output[2] = self.refine_val(output[2], variables)
-            variables[output[0]] = str(output[1]) + ' + ' + str(output[2])
-    
-
-    """
     Base iteration to get all the temp variables final values
     :return : dict, final values of temp variables
     """
@@ -137,15 +83,13 @@ class exf_data:
             for bb in func.blocks:
                 for inst in bb.instructions:
                     string = str(inst).strip()
+                    method_name = 'opcode_' + str(inst.opcode )
 
-                    if inst.opcode == 'store':
-                        self.opcode_store(string, self.base_variables)
-
-                    if inst.opcode == 'load':
-                        self.opcode_load(string, self.base_variables)
-                        
-                    if inst.opcode == 'add':
-                        self.opcode_add(string, self.base_variables)
+                    # Run all the operations
+                    if method_name in self.ops:
+                        self.ops[method_name](string, self.base_variables)
+                    else:
+                        pass
 
     
     """
@@ -274,15 +218,13 @@ class exf_data:
 
                     for inst in bb.instructions:
                         string = str(inst).strip()
+                        method_name = 'opcode_' + str(inst.opcode )
 
-                        if inst.opcode == 'store':
-                            self.opcode_store(string, self.variables)
-
-                        if inst.opcode == 'load':
-                            self.opcode_load(string, self.variables)
-                        
-                        if inst.opcode == 'add':
-                            self.opcode_add(string, self.variables)
+                        # Run all the methods from operation
+                        if method_name in self.ops:
+                            self.ops[method_name](string, self.variables)
+                        else:
+                            pass
 
         self.for_iteration = for_list                    
 
