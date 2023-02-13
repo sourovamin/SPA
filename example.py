@@ -42,8 +42,8 @@ print(exfd.variables)
 print('Text')
 print(exfd.text)
 
-# print('Base Variables')
-# print(exfd.base_variables)
+# print('Final Base Variables')
+# print(exfd.fin_variables())
 
 print('Total BB Execution')
 print(exfd.bb_execution)

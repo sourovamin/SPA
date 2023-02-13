@@ -29,8 +29,6 @@ class exf_data:
         self.func_name = func_name
         self.ops = op.operation().ops
 
-        self.base_iteration()
-        self.calculate_variables(self.base_variables)
         self.main_iteration()
         self.calculate_variables(self.variables)
 
@@ -77,7 +75,7 @@ class exf_data:
     Base iteration to get all the temp variables final values
     :return : dict, final values of temp variables
     """
-    def base_iteration(self):
+    def fin_variables(self):
         # variables = {}
         for func in self.module.functions:
             for bb in func.blocks:
@@ -90,6 +88,9 @@ class exf_data:
                         self.ops[method_name](string, self.base_variables)
                     else:
                         pass
+
+        self.calculate_variables(self.base_variables)
+        return self.base_variables
 
     
     """
@@ -170,6 +171,18 @@ class exf_data:
         for func in self.module.functions:
             if func.name == self.func_name:
                 for bb in func.blocks:
+                    
+                    # Update variables
+                    for inst in bb.instructions:
+                        string = str(inst).strip()
+                        method_name = 'opcode_' + str(inst.opcode )
+
+                        # Run all the methods from operation
+                        if method_name in self.ops:
+                            self.ops[method_name](string, self.variables)
+                        else:
+                            pass
+                    
                     # Count the linear blocks excluding for executions
                     if bb.name in not_for[func.name]:
                         temp_lin_block = temp_lin_block + 1
@@ -185,8 +198,8 @@ class exf_data:
                         degree = for_list[func.name][bb.name].get('nested_degree', 1)
                         nested = ', Nested: ' + str(for_list[func.name][bb.name]['nested_for']) if len(for_list[func.name][bb.name]['nested_for']) > 0 else ''
                         inc = int(for_list[func.name][bb.name].get('inc', 1))
-                        start = self.get_val(for_list[func.name][bb.name]['start'], self.base_variables)
-                        end = self.get_val(for_list[func.name][bb.name]['end'], self.base_variables)
+                        start = self.get_val(for_list[func.name][bb.name]['start'], self.variables)
+                        end = self.get_val(for_list[func.name][bb.name]['end'], self.variables)
                         parent = for_list[func.name][bb.name].get('parent', None)
                         parent_text = ', Parent: ' + str(parent) if parent else ''
                         parent_iteration = for_list[func.name][parent].get('iteration', None) if parent else None
@@ -216,15 +229,6 @@ class exf_data:
                                 self.bb_execution = ''
                             self.bb_execution = str(self.bb_execution) + ' + ' +  str(bb.name)
 
-                    for inst in bb.instructions:
-                        string = str(inst).strip()
-                        method_name = 'opcode_' + str(inst.opcode )
-
-                        # Run all the methods from operation
-                        if method_name in self.ops:
-                            self.ops[method_name](string, self.variables)
-                        else:
-                            pass
 
         self.for_iteration = for_list                    
 
