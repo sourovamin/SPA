@@ -4,3 +4,6 @@ __pycache__/
 
 # Test py file
 test*.py
+
+# Mac generated file
+.DS_Store

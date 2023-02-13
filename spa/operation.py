@@ -15,7 +15,8 @@ class operation:
             # Keep the naming convention right: opcode_operation
             'opcode_store': self.opcode_store,
             'opcode_load': self.opcode_load,
-            'opcode_add': self.opcode_add
+            'opcode_add': self.opcode_add,
+            'opcode_mul': self.opcode_mul
         }
 
 
@@ -67,6 +68,8 @@ class operation:
     :param string: Instruction string
     """
     def opcode_add(self, string, variables):
+        # Pattern to get variable name and value
+        # %add25 = add nsw i32 %13, 20
         words = string.split()
         output = [words[0]] + words[-2:]
         output = [x.strip(",") for x in output]
@@ -75,4 +78,22 @@ class operation:
             output[1] = self.refine_val(output[1], variables)
             output[2] = self.refine_val(output[2], variables)
             variables[output[0]] = str(output[1]) + ' + ' + str(output[2])
+
+
+    
+    """
+    Calculate for the opcode mul
+    :param string: Instruction string
+    """
+    def opcode_mul(self, string, variables):
+        # Pattern to get variable name and value
+        # %mul27 = mul nsw i32 %15, %16
+        words = string.split()
+        output = [words[0]] + words[-2:]
+        output = [x.strip(",") for x in output]
+
+        if output[0] and output[1] and output[2]:
+            output[1] = self.refine_val(output[1], variables)
+            output[2] = self.refine_val(output[2], variables)
+            variables[output[0]] = '(' + '(' +str(output[1]) + ')' + ' * ' + '(' + str(output[2]) + ')' + ')'
     
