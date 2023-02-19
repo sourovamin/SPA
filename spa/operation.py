@@ -16,7 +16,8 @@ class operation:
             'opcode_store': self.opcode_store,
             'opcode_load': self.opcode_load,
             'opcode_add': self.opcode_add,
-            'opcode_mul': self.opcode_mul
+            'opcode_mul': self.opcode_mul,
+            'opcode_call': self.opcode_call
         }
 
 
@@ -30,6 +31,21 @@ class operation:
         if val in variables:
             val = variables[val]
         return val
+
+    
+    """
+    Update the variable string with previously stored value
+    :param val: Input value
+    :param val: Input variables
+    :return : Refined string using stored variables
+    """
+    def refine_string(self, string, variables):
+        try:
+            pattern = r"%\d+"
+            new_s = re.sub(pattern, lambda match: self.refine_val(match.group(), variables), string)
+            return str(new_s)
+        except:
+            return string
     
     
     """
@@ -96,4 +112,22 @@ class operation:
             output[1] = self.refine_val(output[1], variables)
             output[2] = self.refine_val(output[2], variables)
             variables[output[0]] = '(' + '(' +str(output[1]) + ')' + ' * ' + '(' + str(output[2]) + ')' + ')'
+
+
+
+    """
+    Calculate for the opcode call
+    :param string: Instruction string
+    """
+    def opcode_call(self, string, variables):
+        # Pattern to get variable name and value
+        # %call = call i32 @_Z3mulii(i32 10, i32 %0)
+        call = re.search(r"@[_a-zA-Z]\w*\([^)]*\)", string)
+        if call is None:
+            return
+        output = call.group()
+        words = string.split()
+
+        if output and words[0].startswith('%'):
+            variables[words[0]] = self.refine_string(str(output), variables)
     
