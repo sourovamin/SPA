@@ -2,6 +2,7 @@
 
 from spa import fs_data as fsd
 from spa import exf_data as exfd
+from spa import fcp
 import llvmlite.binding as llvm
 import llvmlite.ir as ir
 import sys
@@ -47,3 +48,19 @@ print(exfd.text)
 
 print('Total BB Execution')
 print(exfd.bb_execution)
+
+# Function Call Path
+fcp = fcp.fcp(input_file)
+print('\n')
+
+print('User Defined Function List')
+print(fcp.func_list)
+
+print('Function Index')
+print(fcp.func_index)
+
+print('Main Call Path')
+print(fcp.call_path)
+
+# store path to file
+fcp.store_path()
