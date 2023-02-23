@@ -83,8 +83,8 @@ class fcp:
     def func_index(self, funcs, ll_lines):
         func_index = []
         for i, func in enumerate(funcs):
-            start_index = -1
-            end_index = -1
+            start_index = 0
+            end_index = 0
             found = False
             for j, line in enumerate(ll_lines):
                 if line.find('@' + func + '(') != -1 and line.find('define') != -1:
