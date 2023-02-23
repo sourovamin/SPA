@@ -229,6 +229,18 @@ class exf_data:
                                 self.bb_execution = ''
                             self.bb_execution = str(self.bb_execution) + ' + ' +  str(bb.name)
 
+        # If there are some linear blocks
+        if temp_lin_block > 0:
+            try:
+                self.text += 'Linear Block(s): ' + str(temp_lin_block) + '\n'
+                if isinstance(self.bb_execution, int) and isinstance(temp_lin_block, int):
+                    self.bb_execution += temp_lin_block
+                else:
+                    if self.bb_execution == 0:
+                        self.bb_execution = ''
+                        self.bb_execution = str(self.bb_execution) + ' + ' + str(temp_lin_block)
+            except:
+                pass
 
         self.for_iteration = for_list                    
 
