@@ -8,7 +8,7 @@ int main() {
     int d = a + b;
 
     for(int i = 100; i>b; i--) {
-        for(int i = 0; i<d; i++){
+        for(int j = 0; j<d; j++){
             sum = sum + 1;
         }
     }

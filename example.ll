@@ -15,8 +15,8 @@ entry:
   %b = alloca i32, align 4
   %d = alloca i32, align 4
   %i = alloca i32, align 4
-  %i4 = alloca i32, align 4
-  %i11 = alloca i32, align 4
+  %j = alloca i32, align 4
+  %i10 = alloca i32, align 4
   store i32 0, i32* %retval, align 4
   store i32 0, i32* %sum, align 4
   store i32 6, i32* %add, align 4
@@ -33,79 +33,79 @@ entry:
   store i32 100, i32* %i, align 4
   br label %for.cond
 
-for.cond:                                         ; preds = %for.inc9, %entry
+for.cond:                                         ; preds = %for.inc8, %entry
   %4 = load i32, i32* %i, align 4
   %5 = load i32, i32* %b, align 4
   %cmp = icmp sgt i32 %4, %5
-  br i1 %cmp, label %for.body, label %for.end10
+  br i1 %cmp, label %for.body, label %for.end9
 
 for.body:                                         ; preds = %for.cond
-  store i32 0, i32* %i4, align 4
-  br label %for.cond5
+  store i32 0, i32* %j, align 4
+  br label %for.cond4
 
-for.cond5:                                        ; preds = %for.inc, %for.body
-  %6 = load i32, i32* %i4, align 4
+for.cond4:                                        ; preds = %for.inc, %for.body
+  %6 = load i32, i32* %j, align 4
   %7 = load i32, i32* %d, align 4
-  %cmp6 = icmp slt i32 %6, %7
-  br i1 %cmp6, label %for.body7, label %for.end
+  %cmp5 = icmp slt i32 %6, %7
+  br i1 %cmp5, label %for.body6, label %for.end
 
-for.body7:                                        ; preds = %for.cond5
+for.body6:                                        ; preds = %for.cond4
   %8 = load i32, i32* %sum, align 4
-  %add8 = add nsw i32 %8, 1
-  store i32 %add8, i32* %sum, align 4
+  %add7 = add nsw i32 %8, 1
+  store i32 %add7, i32* %sum, align 4
   br label %for.inc
 
-for.inc:                                          ; preds = %for.body7
-  %9 = load i32, i32* %i4, align 4
+for.inc:                                          ; preds = %for.body6
+  %9 = load i32, i32* %j, align 4
   %inc = add nsw i32 %9, 1
-  store i32 %inc, i32* %i4, align 4
-  br label %for.cond5
+  store i32 %inc, i32* %j, align 4
+  br label %for.cond4
 
-for.end:                                          ; preds = %for.cond5
-  br label %for.inc9
+for.end:                                          ; preds = %for.cond4
+  br label %for.inc8
 
-for.inc9:                                         ; preds = %for.end
+for.inc8:                                         ; preds = %for.end
   %10 = load i32, i32* %i, align 4
   %dec = add nsw i32 %10, -1
   store i32 %dec, i32* %i, align 4
   br label %for.cond
 
-for.end10:                                        ; preds = %for.cond
-  store i32 0, i32* %i11, align 4
-  br label %for.cond12
+for.end9:                                         ; preds = %for.cond
+  store i32 0, i32* %i10, align 4
+  br label %for.cond11
 
-for.cond12:                                       ; preds = %for.inc18, %for.end10
-  %11 = load i32, i32* %i11, align 4
-  %cmp13 = icmp slt i32 %11, 5
-  br i1 %cmp13, label %for.body14, label %for.end20
+for.cond11:                                       ; preds = %for.inc17, %for.end9
+  %11 = load i32, i32* %i10, align 4
+  %cmp12 = icmp slt i32 %11, 5
+  br i1 %cmp12, label %for.body13, label %for.end19
 
-for.body14:                                       ; preds = %for.cond12
-  %12 = load i32, i32* %i11, align 4
-  %cmp15 = icmp eq i32 %12, 2
-  br i1 %cmp15, label %if.then, label %if.else
+for.body13:                                       ; preds = %for.cond11
+  %12 = load i32, i32* %i10, align 4
+  %cmp14 = icmp eq i32 %12, 2
+  br i1 %cmp14, label %if.then, label %if.else
 
-if.then:                                          ; preds = %for.body14
+if.then:                                          ; preds = %for.body13
   %13 = load i32, i32* %sum, align 4
-  %add16 = add nsw i32 %13, 1
+  %add15 = add nsw i32 %13, 1
+  store i32 %add15, i32* %sum, align 4
+  br label %if.end
+
+if.else:                                          ; preds = %for.body13
+  %14 = load i32, i32* %sum, align 4
+  %add16 = add nsw i32 %14, 2
   store i32 %add16, i32* %sum, align 4
   br label %if.end
 
-if.else:                                          ; preds = %for.body14
-  %14 = load i32, i32* %sum, align 4
-  %add17 = add nsw i32 %14, 2
-  store i32 %add17, i32* %sum, align 4
-  br label %if.end
-
 if.end:                                           ; preds = %if.else, %if.then
-  br label %for.inc18
+  br label %for.inc17
 
-for.inc18:                                        ; preds = %if.end
-  %15 = load i32, i32* %i11, align 4
-  %inc19 = add nsw i32 %15, 1
-  store i32 %inc19, i32* %i11, align 4
-  br label %for.cond12
+for.inc17:                                        ; preds = %if.end
+  %15 = load i32, i32* %i10, align 4
+  %inc18 = add nsw i32 %15, 1
+  store i32 %inc18, i32* %i10, align 4
+  br label %for.cond11
 
-for.end20:                                        ; preds = %for.cond12
+for.end19:                                        ; preds = %for.cond11
   %16 = load i32, i32* %sum, align 4
   %call = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([9 x i8], [9 x i8]* @.str, i64 0, i64 0), i32 %16)
   %17 = load i32, i32* %retval, align 4
