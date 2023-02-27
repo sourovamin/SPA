@@ -16,6 +16,7 @@ class exf_data:
     bb_execution = 0
     for_iteration = None
     ops = None
+    f_calls = {}
 
     """
     Initiate the init function that load ll and fetch data
@@ -153,6 +154,22 @@ class exf_data:
             return count
         except:
             return count
+
+
+    """
+    Fetch the function calls and add info
+    :param string: Iteration of loop
+    :param iteration: Number of possible iteration
+    :param iteration: Calls under for condition
+    """
+    def fetch_f_call(self, string, iteration = 1, in_for = None):
+        pattern = r'@(\w+)\('
+        matches = re.findall(pattern, string)
+        for match in matches:
+            self.f_calls[match] = {}
+            self.f_calls[match]['iteration'] =  iteration
+            if in_for is not None:
+                self.f_calls[match]['loop'] = in_for
     
     
     """
@@ -167,6 +184,8 @@ class exf_data:
         for_cond_list = {k: list(v.keys()) for k, v in for_list.items()}
         total_lin_block = 0
         temp_lin_block = 0
+        current_for_name = None
+        iteration_count = 1
 
         for func in self.module.functions:
             if func.name == self.func_name:
@@ -194,6 +213,7 @@ class exf_data:
 
                     # Operation if for condition found
                     if bb.name in for_cond_list[func.name]:
+                        current_for_name = bb.name
                         self.calculate_variables(self.variables)
                         degree = for_list[func.name][bb.name].get('nested_degree', 1)
                         nested = ', Nested: ' + str(for_list[func.name][bb.name]['nested_for']) if len(for_list[func.name][bb.name]['nested_for']) > 0 else ''
@@ -229,6 +249,15 @@ class exf_data:
                                 self.bb_execution = ''
                             self.bb_execution = str(self.bb_execution) + ' + ' +  str(bb.name)
 
+                    # Get function calls
+                    for inst in bb.instructions:
+                        line = str(inst).strip()
+                        if inst.opcode == 'call':
+                            if bb.name in not_for[func.name]:
+                                self.fetch_f_call(line)
+                            else:
+                                self.fetch_f_call(line, iteration_count, current_for_name)
+
         # If there are some linear blocks
         if temp_lin_block > 0:
             try:
@@ -244,5 +273,11 @@ class exf_data:
 
         self.for_iteration = for_list                    
 
+        if len(self.f_calls) > 0:
+            self.text += '\nFunction Calls:\n'
+            for func in self.f_calls:
+                iteration = '' if self.f_calls[func].get('iteration', None) is None else 'Probable Iteration: ' + str(self.f_calls[func]['iteration'])
+                loop_name = '' if self.f_calls[func].get('loop', None) is None else ', In Loop: ' + str(self.f_calls[func]['loop'])
+                self.text += str(func) + ', ' + iteration + loop_name + '\n'
 
         
