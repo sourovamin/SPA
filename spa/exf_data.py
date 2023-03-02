@@ -254,10 +254,17 @@ class exf_data:
                     for inst in bb.instructions:
                         line = str(inst).strip()
                         if inst.opcode == 'call':
-                            if bb.name in not_for[func.name]:
-                                self.fetch_f_call(line)
+
+                            if 'for.end' in bb.name:
+                                if parent is not None and parent_iteration is not None:
+                                    self.fetch_f_call(line, parent_iteration, parent)
+                                else:
+                                    self.fetch_f_call(line)
                             else:
-                                self.fetch_f_call(line, iteration_count, current_for_name)
+                                if bb.name in not_for[func.name]:
+                                    self.fetch_f_call(line)
+                                else:
+                                    self.fetch_f_call(line, iteration_count, current_for_name)
 
                 # If there are some linear blocks
                 if temp_lin_block > 0:
