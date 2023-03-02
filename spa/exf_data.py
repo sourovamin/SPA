@@ -186,6 +186,7 @@ class exf_data:
         temp_lin_block = 0
         current_for_name = None
         iteration_count = 1
+        self.f_calls = {}
 
         for func in self.module.functions:
             if func.name == self.func_name:
@@ -258,26 +259,25 @@ class exf_data:
                             else:
                                 self.fetch_f_call(line, iteration_count, current_for_name)
 
-        # If there are some linear blocks
-        if temp_lin_block > 0:
-            try:
-                self.text += 'Linear Block(s): ' + str(temp_lin_block) + '\n'
-                if isinstance(self.bb_execution, int) and isinstance(temp_lin_block, int):
-                    self.bb_execution += temp_lin_block
-                else:
-                    if self.bb_execution == 0:
-                        self.bb_execution = ''
-                        self.bb_execution = str(self.bb_execution) + ' + ' + str(temp_lin_block)
-            except:
-                pass
+                # If there are some linear blocks
+                if temp_lin_block > 0:
+                    try:
+                        self.text += 'Linear Block(s): ' + str(temp_lin_block) + '\n'
+                        if isinstance(self.bb_execution, int) and isinstance(temp_lin_block, int):
+                            self.bb_execution += temp_lin_block
+                        else:
+                            if self.bb_execution == 0:
+                                self.bb_execution = ''
+                                self.bb_execution = str(self.bb_execution) + ' + ' + str(temp_lin_block)
+                    except:
+                        pass                    
 
-        self.for_iteration = for_list                    
+                if len(self.f_calls) > 0:
+                    self.text += '\nFunction Calls:\n'
+                    for func in self.f_calls:
+                        iteration = '' if self.f_calls[func].get('iteration', None) is None else 'Probable Iteration: ' + str(self.f_calls[func]['iteration'])
+                        loop_name = '' if self.f_calls[func].get('loop', None) is None else ', In Loop: ' + str(self.f_calls[func]['loop'])
+                        self.text += str(func) + ', ' + iteration + loop_name + '\n'
 
-        if len(self.f_calls) > 0:
-            self.text += '\nFunction Calls:\n'
-            for func in self.f_calls:
-                iteration = '' if self.f_calls[func].get('iteration', None) is None else 'Probable Iteration: ' + str(self.f_calls[func]['iteration'])
-                loop_name = '' if self.f_calls[func].get('loop', None) is None else ', In Loop: ' + str(self.f_calls[func]['loop'])
-                self.text += str(func) + ', ' + iteration + loop_name + '\n'
-
+        self.for_iteration = for_list
         

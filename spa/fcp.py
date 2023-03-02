@@ -242,5 +242,31 @@ class fcp:
             print('Path write to file failed!')
 
 
+    
+    """
+    Function call path execution with data
+    :param out_file: default main_call_path.txt
+    """
+    def fcp_execution(self, out_file='fcp_execution.txt'):
+        from spa import exf_data as exfd
+        out_text = ''
 
+        for path in self.call_path:
+            path_text = ''
+            for func in path[:-1]:
+                path_text = path_text + func + ' -> '
+            path_text = path_text + path[-1]
+            path_text = path_text + '\n'
+            
+            out_text += '# ' + path_text
+            out_text += 'Focused Function: ' + path[-1] + '\n'
+
+            ex = exfd.exf_data(self.module, path[-1])
+            out_text += '\n' + ex.text
+            out_text += '\nTotal Probable BB Execution'
+            out_text += '\n' + str(ex.bb_execution)
+
+            out_text += '\n\n'
+
+        print(out_text)
 
