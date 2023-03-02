@@ -261,16 +261,22 @@ class exf_data:
 
                 # If there are some linear blocks
                 if temp_lin_block > 0:
+                    total_lin_block = total_lin_block + temp_lin_block
+                    self.text += 'Linear Block(s): ' + str(temp_lin_block) + '\n'
+
+                # Refine bb_execution string
+                if isinstance(self.bb_execution, str):
+                    self.bb_execution = self.bb_execution.strip().lstrip('+').strip()
+                
+                # Add total linear blocks to bb_execution
+                if total_lin_block > 0:
                     try:
-                        self.text += 'Linear Block(s): ' + str(temp_lin_block) + '\n'
-                        if isinstance(self.bb_execution, int) and isinstance(temp_lin_block, int):
-                            self.bb_execution += temp_lin_block
+                        if isinstance(self.bb_execution, int) and isinstance(total_lin_block, int):
+                            self.bb_execution += total_lin_block
                         else:
-                            if self.bb_execution == 0:
-                                self.bb_execution = ''
-                                self.bb_execution = str(self.bb_execution) + ' + ' + str(temp_lin_block)
+                            self.bb_execution = str(total_lin_block) + ' + ' + str(self.bb_execution)
                     except:
-                        pass                    
+                        pass                     
 
                 if len(self.f_calls) > 0:
                     self.text += '\nFunction Calls:\n'
