@@ -17,6 +17,7 @@ class exf_data:
     for_iteration = None
     ops = None
     f_calls = {}
+    next_func = None
 
     """
     Initiate the init function that load ll and fetch data
@@ -24,10 +25,11 @@ class exf_data:
     :param func: Content from the ll file, default: main
     :param variables: Value of the variables, default: {}
     """
-    def __init__(self, module, func_name = 'main', variables = {}):
+    def __init__(self, module, func_name = 'main', next_func = None, variables = {}):
         self.module = module
         self.variables = variables
         self.func_name = func_name
+        self.next_func = next_func
         self.ops = op.operation().ops
 
         self.main_iteration()
@@ -187,11 +189,15 @@ class exf_data:
         current_for_name = None
         iteration_count = 1
         self.f_calls = {}
+        exit_flag = False
 
         for func in self.module.functions:
+            if exit_flag:
+                break
             if func.name == self.func_name:
                 for bb in func.blocks:
-                    
+                    if exit_flag:
+                        break
                     # Update variables
                     for inst in bb.instructions:
                         string = str(inst).strip()
@@ -265,6 +271,10 @@ class exf_data:
                                     self.fetch_f_call(line)
                                 else:
                                     self.fetch_f_call(line, iteration_count, current_for_name)
+
+                            if self.next_func is not None and '@' + self.next_func + '(' in line:
+                                exit_flag = True
+                                break
 
                 # If there are some linear blocks
                 if temp_lin_block > 0:

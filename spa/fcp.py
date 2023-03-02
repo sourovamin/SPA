@@ -247,11 +247,13 @@ class fcp:
     Function call path execution with data
     :param out_file: default main_call_path.txt
     """
-    def fcp_execution(self, out_file='fcp_execution.txt'):
+    def fcp_execution(self, out_file='fcp_execution.txt', show_result=True):
         from spa import exf_data as exfd
         out_text = ''
 
         for path in self.call_path:
+            variables = {}
+            next_func = None
             path_text = ''
             for func in path[:-1]:
                 path_text = path_text + func + ' -> '
@@ -261,12 +263,30 @@ class fcp:
             out_text += '# ' + path_text
             out_text += 'Focused Function: ' + path[-1] + '\n'
 
-            ex = exfd.exf_data(self.module, path[-1])
+            # Iterate through the call path for data
+            for index, func in enumerate(path[:-1]):
+                if index < len(path) - 1:
+                    next_func = path[index]
+                ex = exfd.exf_data(self.module, func, next_func, variables)
+                variables = ex.variables
+
+            ex = exfd.exf_data(self.module, path[-1], next_func, variables)
+
             out_text += '\n' + ex.text
             out_text += '\nTotal Probable BB Execution'
             out_text += '\n' + str(ex.bb_execution)
 
             out_text += '\n\n'
 
-        print(out_text)
+        if show_result:
+            print(out_text)
+
+        # Store to file
+        try:
+            with open(out_file, 'w') as f:
+                f.write(out_text)
+        except:
+            print('Path write to file failed!')
+
+        
 
