@@ -35,19 +35,19 @@ print(fsd.for_list)
 # print('Not in for:')
 # print(fsd.not_for_list())
 
-exfd = exfd.exf_data(module)
+exfd1 = exfd.exf_data(module)
 
 print('Variables')
-print(exfd.variables)
+print(exfd1.variables)
 
 print('Text')
-print(exfd.text)
+print(exfd1.text)
 
 # print('Final Base Variables')
 # print(exfd.fin_variables())
 
 print('Total BB Execution')
-print(exfd.bb_execution)
+print(exfd1.bb_execution)
 
 # Function Call Path
 fcp = fcp.fcp(input_file)
@@ -63,4 +63,7 @@ print('Main Call Path')
 print(fcp.call_path)
 
 # store path to file
-fcp.store_path()
+# fcp.store_path()
+
+# Show and store FCP execution
+fcp.fcp_execution()
