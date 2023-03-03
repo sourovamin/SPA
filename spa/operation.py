@@ -71,8 +71,8 @@ class operation:
         # Pattern to get variable name and value
         # %1 = load i32, i32* %a, align 4
         words = string.split()
-        output = [word for word in words if word.startswith('%')]
-        output = [x.strip(",") for x in output]
+        output = [word for word in words if word.startswith('%') or word.startswith('@')]
+        output = [x.strip(',') for x in output]
 
         if output[0] and output[1]:
             output[1] = self.refine_val(output[1], variables)

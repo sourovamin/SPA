@@ -7,8 +7,6 @@ import numpy as np
 import re
 import math
 
-from spa import fs_data as fsd
-
 class fcp:
     func_calls_id = None
     temp_func_calls = []
@@ -249,10 +247,13 @@ class fcp:
     """
     def fcp_execution(self, out_file='fcp_execution.txt', show_result=True):
         from spa import exf_data as exfd
+        from spa import fs_data as fsd
         out_text = ''
 
+        global_vars = fsd.fs_data(self.module).global_vars
+
         for path in self.call_path:
-            variables = {}
+            variables = global_vars
             next_func = None
             path_text = ''
             for func in path[:-1]:

@@ -9,6 +9,7 @@ class fs_data:
     function_list = None
     block_list = None
     for_list = None
+    global_vars = {}
 
     """
     Initiate the init function that load ll and fetch data
@@ -19,6 +20,7 @@ class fs_data:
         self.block_list = self.func_blocks()
         self.function_list = self.func_list()
         self.for_list = self.fetch_for()
+        self.global_vars = self.get_global_vars()
 
 
     """
@@ -181,3 +183,21 @@ class fs_data:
                     pass
         
         return for_list
+
+
+    """
+    Get the initial values of global variables excluding system generated
+    :return : Dict of global variables with values
+    """
+    def get_global_vars(self):
+        vars = {}
+
+        global_values = self.module.global_variables
+        for gv in global_values:
+            words = str(gv).split()
+            if(len(words) == 7):
+                key = words[0].strip()
+                value = words[4].strip(',')
+                vars[key] = value
+
+        return vars
