@@ -103,7 +103,7 @@ class exf_data:
     :param inc: Incriment
     :return : iteration number or dependency
     """
-    def iteration_count(self, start, end, inc, parent_iteration=None):
+    def iteration_count(self, start, end, inc, parent_iteration=None, self_iteration=1):
         start_s = str(start)
         end_s = str(end)
         inc_s = str(inc)
@@ -118,25 +118,26 @@ class exf_data:
         except:
             output = ''
             if parent_iteration:
-                output += str(parent_iteration) + ' * '
-            output += 'f('
-            start_f = end_f = ''
-            try:
-                start_f = int(start)
-            except:
-                start_f = start
+                output += str(parent_iteration) + ' * ' + str(self_iteration)
+            else:
+                output += 'f('
+                start_f = end_f = ''
+                try:
+                    start_f = int(start)
+                except:
+                    start_f = start
 
-            try:
-                end_f = int(end)
-            except:
-                end_f = end
+                try:
+                    end_f = int(end)
+                except:
+                    end_f = end
 
-            if not isinstance(start_f, int):
-                output += str(start_f) + ', '
-            if not isinstance(end_f, int):
-                output += str(end_f)
+                if not isinstance(start_f, int):
+                    output += str(start_f) + ', '
+                if not isinstance(end_f, int):
+                    output += str(end_f)
 
-            output += ')'
+                output += ')'
             return output
 
     
@@ -233,7 +234,7 @@ class exf_data:
                         # Self iteration count
                         self_iteration = self.iteration_count(start, end, inc)
                         # Total iteration count considering parent iteration
-                        iteration_count = self.iteration_count(start, end, inc, parent_iteration)
+                        iteration_count = self.iteration_count(start, end, inc, parent_iteration, self_iteration)
                         # Modify for list
                         for_list[func.name][bb.name]['iteration'] = iteration_count
                         bb_count = for_list[func.name][bb.name].get('block_count', 'NA')
