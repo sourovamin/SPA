@@ -15,9 +15,13 @@ class operation:
             # Keep the naming convention right: opcode_operation
             'opcode_store': self.opcode_store,
             'opcode_load': self.opcode_load,
+            'opcode_call': self.opcode_call,
             'opcode_add': self.opcode_add,
             'opcode_mul': self.opcode_mul,
-            'opcode_call': self.opcode_call
+            'opcode_fdiv': self.opcode_fdiv,
+            'opcode_sdiv': self.opcode_sdiv,
+            'opcode_fpext': self.opcode_fpext,
+            'opcode_sitofp': self.opcode_sitofp
         }
 
 
@@ -80,6 +84,23 @@ class operation:
 
 
     """
+    Calculate for the opcode call
+    :param string: Instruction string
+    """
+    def opcode_call(self, string, variables):
+        # Pattern to get variable name and value
+        # %call = call i32 @_Z3mulii(i32 10, i32 %0)
+        call = re.search(r"@[_a-zA-Z]\w*\([^)]*\)", string)
+        if call is None:
+            return
+        output = call.group()
+        words = string.split()
+
+        if output and words[0].startswith('%'):
+            variables[words[0]] = self.refine_string(str(output), variables)
+
+
+    """
     Calculate for the opcode add
     :param string: Instruction string
     """
@@ -114,20 +135,66 @@ class operation:
             variables[output[0]] = '(' + '(' +str(output[1]) + ')' + ' * ' + '(' + str(output[2]) + ')' + ')'
 
 
-
     """
-    Calculate for the opcode call
+    Calculate for the opcode fdiv
     :param string: Instruction string
     """
-    def opcode_call(self, string, variables):
+    def opcode_fdiv(self, string, variables):
         # Pattern to get variable name and value
-        # %call = call i32 @_Z3mulii(i32 10, i32 %0)
-        call = re.search(r"@[_a-zA-Z]\w*\([^)]*\)", string)
-        if call is None:
-            return
-        output = call.group()
+        # %div = fdiv i32 %0, %1
         words = string.split()
+        output = [words[0]] + words[-2:]
+        output = [x.strip(",") for x in output]
 
-        if output and words[0].startswith('%'):
-            variables[words[0]] = self.refine_string(str(output), variables)
+        if output[0] and output[1] and output[2]:
+            output[1] = self.refine_val(output[1], variables)
+            output[2] = self.refine_val(output[2], variables)
+            variables[output[0]] = '(' + '(' +str(output[1]) + ')' + ' / ' + '(' + str(output[2]) + ')' + ')'
+
+    
+    """
+    Calculate for the opcode sdiv
+    :param string: Instruction string
+    """
+    def opcode_sdiv(self, string, variables):
+        # Pattern to get variable name and value
+        # %div = fdiv i32 %0, %1
+        words = string.split()
+        output = [words[0]] + words[-2:]
+        output = [x.strip(",") for x in output]
+
+        if output[0] and output[1] and output[2]:
+            output[1] = self.refine_val(output[1], variables)
+            output[2] = self.refine_val(output[2], variables)
+            variables[output[0]] = '(' + '(' +str(output[1]) + ')' + ' / ' + '(' + str(output[2]) + ')' + ')'
+            
+
+    """
+    Calculate for the opcode fpext floating-point extend
+    :param string: Instruction string
+    """
+    def opcode_fpext(self, string, variables):
+        # Pattern to get variable name and value
+        # %conv = fpext float %2 to double
+        pattern = r'%\w+'
+        output = re.findall(pattern, string)
+
+        if output[0] and output[1]:
+            output[1] = self.refine_val(output[1], variables)
+            variables[output[0]] = output[1]
+
+    
+    """
+    Calculate for the opcode sitofp
+    :param string: Instruction string
+    """
+    def opcode_sitofp(self, string, variables):
+        # Pattern to get variable name and value
+        # %conv = fpext float %2 to double
+        pattern = r'%\w+'
+        output = re.findall(pattern, string)
+
+        if output[0] and output[1]:
+            output[1] = self.refine_val(output[1], variables)
+            variables[output[0]] = output[1]
     
