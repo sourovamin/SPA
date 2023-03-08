@@ -2,6 +2,7 @@
 
 import re
 import math
+import struct
 
 class operation:
     ops = None
@@ -50,6 +51,33 @@ class operation:
             return str(new_s)
         except:
             return string
+
+    """
+    Process value if float or hexadecimal value found
+    :param val: Input value
+    :return : Processed value
+    """
+    def process_value(self, val):
+        try:
+            # if int
+            return int(val)
+        except ValueError:
+            try:
+                # if float
+                return float(val)
+            except ValueError:
+                try:
+                    # if hexadecimal
+                    hexa_check = int(val, 16)
+                    try:
+                        val = struct.unpack('>d', bytes.fromhex(val[2:]))[0]
+                    except:
+                        return val
+                    return val
+                except ValueError:
+                    return val
+
+        return val
     
     
     """
@@ -63,7 +91,7 @@ class operation:
         output = [words[2].strip(','), words[4].strip(',')]
                             
         if output[0] and output[1]:
-            output[0] = self.refine_val(output[0], variables)
+            output[0] = self.refine_val(self.process_value(output[0]), variables)
             variables[output[1]] = output[0]
 
 
