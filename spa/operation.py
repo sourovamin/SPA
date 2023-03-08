@@ -18,11 +18,24 @@ class operation:
             'opcode_load': self.opcode_load,
             'opcode_call': self.opcode_call,
             'opcode_add': self.opcode_add,
+            'opcode_fadd': self.opcode_add,
+            'opcode_sub': self.opcode_sub,
+            'opcode_fsub': self.opcode_sub,
             'opcode_mul': self.opcode_mul,
+            'opcode_fmul': self.opcode_mul,
             'opcode_fdiv': self.opcode_fdiv,
             'opcode_sdiv': self.opcode_sdiv,
+            'opcode_rem': self.opcode_rem,
+            'opcode_srem': self.opcode_rem,
+            'opcode_frem': self.opcode_rem,
             'opcode_fpext': self.opcode_fpext,
-            'opcode_sitofp': self.opcode_sitofp
+            'opcode_sitofp': self.opcode_fpext,
+            'opcode_fptrunc': self.opcode_fpext,
+            'opcode_uitofp': self.opcode_fpext,
+            'opcode_fptoui': self.opcode_fpext,
+            'opcode_fptosi': self.opcode_fpext,
+            'opcode_ptrtoint': self.opcode_fpext,
+            'opcode_inttoptr': self.opcode_fpext,
         }
 
 
@@ -145,6 +158,22 @@ class operation:
             variables[output[0]] = str(output[1]) + ' + ' + str(output[2])
 
 
+    """
+    Calculate for the opcode sub
+    :param string: Instruction string
+    """
+    def opcode_sub(self, string, variables):
+        # Pattern to get variable name and value
+        # %sub = sub float %0, %1
+        words = string.split()
+        output = [words[0]] + words[-2:]
+        output = [x.strip(",") for x in output]
+
+        if output[0] and output[1] and output[2]:
+            output[1] = self.refine_val(output[1], variables)
+            output[2] = self.refine_val(output[2], variables)
+            variables[output[0]] = str(output[1]) + ' - ' + str(output[2])
+
     
     """
     Calculate for the opcode mul
@@ -199,6 +228,7 @@ class operation:
 
     """
     Calculate for the opcode fpext floating-point extend
+    Also works for other conversations like sitofp, fptrunc
     :param string: Instruction string
     """
     def opcode_fpext(self, string, variables):
@@ -211,18 +241,19 @@ class operation:
             output[1] = self.refine_val(output[1], variables)
             variables[output[0]] = output[1]
 
-    
+
     """
-    Calculate for the opcode sitofp
+    Calculate for the opcode rem reminder of the division
     :param string: Instruction string
     """
-    def opcode_sitofp(self, string, variables):
+    def opcode_rem(self, string, variables):
         # Pattern to get variable name and value
-        # %conv = fpext float %2 to double
-        pattern = r'%\w+'
-        output = re.findall(pattern, string)
+        # %rem = srem i32 %0, %1
+        words = string.split()
+        output = [words[0]] + words[-2:]
+        output = [x.strip(",") for x in output]
 
-        if output[0] and output[1]:
+        if output[0] and output[1] and output[2]:
             output[1] = self.refine_val(output[1], variables)
-            variables[output[0]] = output[1]
-    
+            output[2] = self.refine_val(output[2], variables)
+            variables[output[0]] = str(output[1]) + ' % ' + str(output[2])
