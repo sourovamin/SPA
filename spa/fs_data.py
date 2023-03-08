@@ -210,6 +210,36 @@ class fs_data:
                         if for_list[func.name][inc_cond]:
                             for_list[func.name][inc_cond]['inc'] = inc_val
 
+        # Get parent and sequential block counts for while
+        for func, value in while_list.items():
+            for while_block, attr in value.items():
+                try:
+                    # Sequential block count in for loop
+                    start_index = self.block_list[func].index(while_block)
+                    end_index = self.block_list[func].index(attr['end_bb'])
+                    block_count = abs(end_index - start_index) +1
+                    while_list[func][while_block]['block_count'] = block_count
+
+                    # Nested degree and nested for storing
+                    temp_list = self.block_list[func][start_index + 1 : end_index + 1]
+                    nested_degree = 1
+                    for item in temp_list:
+                        if 'while.cond' in item:
+                            nested_degree = nested_degree + 1
+                            while_list[func][item]['parent'] = while_block
+
+                        if 'for.cond' in item:
+                            nested_degree = nested_degree + 1
+                            try:
+                                for_list[func][item]['parent'] = while_block
+                            except:
+                                pass
+
+                    while_list[func][while_block]['nested_degree'] = nested_degree
+
+                except:
+                    pass
+        
         # Get the nested degree ,nested for and sequential block counts
         for func, value in for_list.items():
             for for_block, attr in value.items():
@@ -230,46 +260,16 @@ class fs_data:
                             nested_for.append(item)
                             for_list[func][item]['parent'] = for_block
 
-                        # if 'while.cond' in item:
-                        #     nested_degree = nested_degree + 1
-                        #     nested_for.append(item)
-                        #     try:
-                        #         while_list[func][item]['parent'] = for_block
-                        #     except:
-                        #         pass
+                        if 'while.cond' in item:
+                            nested_degree = nested_degree + 1
+                            nested_for.append(item)
+                            try:
+                                while_list[func][item]['parent'] = for_block
+                            except:
+                                pass
 
                     for_list[func][for_block]['nested_degree'] = nested_degree
                     for_list[func][for_block]['nested_for'] = nested_for
-
-                except:
-                    pass
-
-        # Get parent and sequential block counts for while
-        for func, value in while_list.items():
-            for while_block, attr in value.items():
-                try:
-                    # Sequential block count in for loop
-                    start_index = self.block_list[func].index(while_block)
-                    end_index = self.block_list[func].index(attr['end_bb'])
-                    block_count = abs(end_index - start_index) +1
-                    while_list[func][while_block]['block_count'] = block_count
-
-                    # Nested degree and nested for storing
-                    temp_list = self.block_list[func][start_index + 1 : end_index + 1]
-                    nested_degree = 1
-                    for item in temp_list:
-                        if 'while.cond' in item:
-                            nested_degree = nested_degree + 1
-                            while_list[func][item]['parent'] = while_block
-
-                        # if 'for.cond' in item:
-                        #     nested_degree = nested_degree + 1
-                        #     try:
-                        #         for_list[func][item]['parent'] = while_block
-                        #     except:
-                        #         pass
-
-                    while_list[func][while_block]['nested_degree'] = nested_degree
 
                 except:
                     pass

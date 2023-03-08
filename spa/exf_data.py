@@ -234,7 +234,10 @@ class exf_data:
                         end = self.get_val(for_list[func.name][bb.name]['end'], self.variables)
                         parent = for_list[func.name][bb.name].get('parent', None)
                         parent_text = ', Parent: ' + str(parent) if parent else ''
-                        parent_iteration = for_list[func.name][parent].get('iteration', None) if parent else None
+                        if parent and 'while' in parent:
+                            parent_iteration = while_list[func.name][parent].get('iteration', None) if parent else None
+                        else:
+                            parent_iteration = for_list[func.name][parent].get('iteration', None) if parent else None
                         # Self iteration count
                         self_iteration = self.iteration_count(start, end, inc)
                         # Total iteration count considering parent iteration
@@ -269,7 +272,10 @@ class exf_data:
                         # nested = ', Nested: ' + str(while_list[func.name][bb.name]['nested_while']) if len(while_list[func.name][bb.name]['nested_while']) > 0 else ''
                         parent = while_list[func.name][bb.name].get('parent', None)
                         parent_text = ', Parent: ' + str(parent) if parent else ''
-                        parent_iteration = while_list[func.name][parent].get('iteration', None) if parent else None
+                        if parent and 'for' in parent:
+                            parent_iteration = for_list[func.name][parent].get('iteration', None) if parent else None
+                        else:
+                            parent_iteration = while_list[func.name][parent].get('iteration', None) if parent else None
                         dependency = ','.join(while_list[func.name][bb.name].get('dependency', []))
                         bb_count = while_list[func.name][bb.name].get('block_count', 'BB')
                         # Self iteration count
