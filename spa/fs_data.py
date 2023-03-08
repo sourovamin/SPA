@@ -181,9 +181,9 @@ class fs_data:
                     for inst in inst[:-1]:
                         if inst.opcode == 'icmp':
                             words = str(inst).split()
-                            output = [word for word in words if word.startswith('%')]
-                            output = [x.strip(',') for x in output]
-                            vars = vars + output[1:]
+                            #output = [word for word in words if word.startswith('%')]
+                            output = [x.strip(',') for x in words[-2:]]
+                            vars = vars + output
 
                     # Store values
                     while_list[func.name][bb.name]['body_bb'] = body_bb.lstrip('%')

@@ -173,6 +173,17 @@ class exf_data:
             self.f_calls[match]['iteration'] =  iteration
             if in_for is not None:
                 self.f_calls[match]['loop'] = in_for
+
+
+    """
+    Get the variable stored value
+    :param val: Input value
+    :return : Refined value using stored variables
+    """
+    def get_variable_val(self, val):
+        if val in self.variables:
+            val = self.variables[val]
+        return str(val)
     
     
     """
@@ -276,7 +287,8 @@ class exf_data:
                             parent_iteration = for_list[func.name][parent].get('iteration', None) if parent else None
                         else:
                             parent_iteration = while_list[func.name][parent].get('iteration', None) if parent else None
-                        dependency = ','.join(while_list[func.name][bb.name].get('dependency', []))
+                        temp_dependency = [self.get_variable_val(x) for x in while_list[func.name][bb.name].get('dependency', [])]
+                        dependency = ','.join(temp_dependency)
                         bb_count = while_list[func.name][bb.name].get('block_count', 'BB')
                         # Self iteration count
                         self_iteration = bb.name + '(' + str(dependency) + ')'
