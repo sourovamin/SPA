@@ -9,6 +9,7 @@ class fs_data:
     function_list = None
     block_list = None
     for_list = None
+    while_list = None
     global_vars = {}
 
     """
@@ -19,7 +20,7 @@ class fs_data:
         self.module = module
         self.block_list = self.func_blocks()
         self.function_list = self.func_list()
-        self.for_list = self.fetch_for()
+        self.for_list, self.while_list = self.fetch_loop()
         self.global_vars = self.get_global_vars()
 
 
@@ -82,20 +83,44 @@ class fs_data:
 
         return data
 
+    
+    """
+    Get the blocks that are not part of while loops
+    :return dict: list of blocks in each function
+    """
+    def not_while_list(self):
+        data = self.block_list
+        
+        for func, b_list in data.items():
+            for start_b, dt in self.while_list[func].items():
+                try:
+                    start = data[func].index(start_b)
+                    end = data[func].index(dt['end_bb'])
+                    data[func] = data[func][:start] + data[func][end+1:]
+                except:
+                    pass
+
+        return data
+
 
     """
     Get all the for loops and related data
     :return : Dict of all the for loops with fetchable data fousing on for condition
     """
-    def fetch_for(self):
+    def fetch_loop(self):
         # Setup for list
         for_list = {}
+        while_list = {}
         for func, value in self.block_list.items():
             for_cond = {}
+            while_cond = {}
             for bb in value:
                 if 'for.cond' in bb:
                     for_cond[bb] = {}
+                if 'while.cond' in bb:
+                    while_cond[bb] = {}
             for_list[func] = for_cond
+            while_list[func] = while_cond
 
         # Get values for for list
         for func in self.module.functions:
@@ -135,6 +160,35 @@ class fs_data:
                     for_list[func.name][bb.name]['dependency'] = vars
                     for_list[func.name][bb.name]['start'] = start
                     for_list[func.name][bb.name]['end'] = end
+
+                # While Conditional block
+                if 'while.cond' in bb.name:
+                    body_bb = 'NA'
+                    end_bb = 'NA'
+                    vars = []
+                    inst = list(bb.instructions)
+
+                    # Analyze br instruction
+                    br_inst = str(inst[-1])
+                    words = br_inst.split()
+                    for word in words:
+                        if 'while.body' in word:
+                            body_bb = word.rstrip(',')
+                        if 'while.end' in word:
+                            end_bb = word.rstrip(',')
+                    
+                    # Analyze other instructions
+                    for inst in inst[:-1]:
+                        if inst.opcode == 'icmp':
+                            words = str(inst).split()
+                            output = [word for word in words if word.startswith('%')]
+                            output = [x.strip(',') for x in output]
+                            vars = vars + output[1:]
+
+                    # Store values
+                    while_list[func.name][bb.name]['body_bb'] = body_bb.lstrip('%')
+                    while_list[func.name][bb.name]['end_bb'] = end_bb.lstrip('%')
+                    while_list[func.name][bb.name]['dependency'] = vars
 
                 # For inc blocks
                 if 'for.inc' in bb.name:
@@ -176,13 +230,51 @@ class fs_data:
                             nested_for.append(item)
                             for_list[func][item]['parent'] = for_block
 
+                        # if 'while.cond' in item:
+                        #     nested_degree = nested_degree + 1
+                        #     nested_for.append(item)
+                        #     try:
+                        #         while_list[func][item]['parent'] = for_block
+                        #     except:
+                        #         pass
+
                     for_list[func][for_block]['nested_degree'] = nested_degree
                     for_list[func][for_block]['nested_for'] = nested_for
 
                 except:
                     pass
+
+        # Get parent and sequential block counts for while
+        for func, value in while_list.items():
+            for while_block, attr in value.items():
+                try:
+                    # Sequential block count in for loop
+                    start_index = self.block_list[func].index(while_block)
+                    end_index = self.block_list[func].index(attr['end_bb'])
+                    block_count = abs(end_index - start_index) +1
+                    while_list[func][while_block]['block_count'] = block_count
+
+                    # Nested degree and nested for storing
+                    temp_list = self.block_list[func][start_index + 1 : end_index + 1]
+                    nested_degree = 1
+                    for item in temp_list:
+                        if 'while.cond' in item:
+                            nested_degree = nested_degree + 1
+                            while_list[func][item]['parent'] = while_block
+
+                        # if 'for.cond' in item:
+                        #     nested_degree = nested_degree + 1
+                        #     try:
+                        #         for_list[func][item]['parent'] = while_block
+                        #     except:
+                        #         pass
+
+                    while_list[func][while_block]['nested_degree'] = nested_degree
+
+                except:
+                    pass
         
-        return for_list
+        return for_list, while_list
 
 
     """

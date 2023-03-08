@@ -183,11 +183,15 @@ class exf_data:
         from spa import fs_data as fsd
         fsd = fsd.fs_data(self.module)
         for_list = fsd.for_list
+        while_list = fsd.while_list
         not_for = fsd.not_for_list()
+        not_while = fsd.not_while_list()
         for_cond_list = {k: list(v.keys()) for k, v in for_list.items()}
+        while_cond_list = {k: list(v.keys()) for k, v in while_list.items()}
         total_lin_block = 0
         temp_lin_block = 0
         current_for_name = None
+        current_while_name = None
         iteration_count = 1
         self.f_calls = {}
         exit_flag = False
@@ -211,7 +215,7 @@ class exf_data:
                             pass
                     
                     # Count the linear blocks excluding for executions
-                    if bb.name in not_for[func.name]:
+                    if bb.name in not_for[func.name] or bb.name in not_while[func.name]:
                         temp_lin_block = temp_lin_block + 1
                     else:
                         if temp_lin_block > 0:
@@ -243,6 +247,43 @@ class exf_data:
                         for_list[func.name][bb.name]['block_exec'] = execution
 
                         self.text += 'for: ' + str(bb.name) + ', Degree: ' + str(degree) + nested + parent_text + ', Start: ' + str(start) + ', End: ' + str(end)+ ', Probable Self Iteration: ' + str(self_iteration) + ', Probable Iteration: ' + str(iteration_count)  + ', Probable BB Execution: ' + str(execution) + '\n'
+                        # self.text += str(self.variables) + '\n'
+
+                        try:
+                            if isinstance(self.bb_execution, int) and isinstance(execution, int):
+                                self.bb_execution += execution
+                            else:
+                                if self.bb_execution == 0:
+                                    self.bb_execution = ''
+                                self.bb_execution = str(self.bb_execution) + ' + ' + str(execution)
+                        except:
+                            if self.bb_execution == 0:
+                                self.bb_execution = ''
+                            self.bb_execution = str(self.bb_execution) + ' + ' +  str(bb.name)
+
+                    # Operation if while condition found
+                    if bb.name in while_cond_list[func.name]:
+                        current_while_name = bb.name
+                        self.calculate_variables(self.variables)
+                        # degree = while_list[func.name][bb.name].get('nested_degree', 1)
+                        # nested = ', Nested: ' + str(while_list[func.name][bb.name]['nested_while']) if len(while_list[func.name][bb.name]['nested_while']) > 0 else ''
+                        parent = while_list[func.name][bb.name].get('parent', None)
+                        parent_text = ', Parent: ' + str(parent) if parent else ''
+                        parent_iteration = while_list[func.name][parent].get('iteration', None) if parent else None
+                        dependency = ','.join(while_list[func.name][bb.name].get('dependency', []))
+                        bb_count = while_list[func.name][bb.name].get('block_count', 'BB')
+                        # Self iteration count
+                        self_iteration = bb.name + '(' + str(dependency) + ')'
+                        # Total iteration count considering parent iteration
+                        parent_it_text = ' * ' + str(parent_iteration) if parent_iteration is not None else ''
+                        iteration_count = str(self_iteration) + parent_it_text
+                        # Modify for list
+                        while_list[func.name][bb.name]['iteration'] = iteration_count
+                        execution = str(bb_count) + ' * ' + str(iteration_count)
+                        # Modify for list
+                        while_list[func.name][bb.name]['block_exec'] = execution
+
+                        self.text += 'while: ' + str(bb.name) + ', Probable Self Iteration: ' + str(self_iteration) + ', Probable Iteration: ' + str(iteration_count)  + ', Probable BB Execution: ' + str(execution) + '\n'
                         # self.text += str(self.variables) + '\n'
 
                         try:
