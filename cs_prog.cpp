@@ -1,3 +1,5 @@
+// This case study program is developed by Gustavo De Morais
+
 #include <iostream>
 #include <string>
 #include <pthread.h>
