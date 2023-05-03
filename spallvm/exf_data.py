@@ -5,7 +5,7 @@ import llvmlite.ir as ir
 import re
 import math
 
-from spa import operation as op
+from spallvm import operation as op
 
 class exf_data:
     module = None
@@ -191,7 +191,7 @@ class exf_data:
     Iterate over the functions
     """
     def main_iteration(self):
-        from spa import fs_data as fsd
+        from spallvm import fs_data as fsd
         fsd = fsd.fs_data(self.module)
         for_list = fsd.for_list
         while_list = fsd.while_list

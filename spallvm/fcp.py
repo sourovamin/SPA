@@ -246,8 +246,8 @@ class fcp:
     :param out_file: default main_call_path.txt
     """
     def fcp_execution(self, out_file='fcp_execution.txt', show_result=True):
-        from spa import exf_data as exfd
-        from spa import fs_data as fsd
+        from spallvm import exf_data as exfd
+        from spallvm import fs_data as fsd
         out_text = ''
 
         global_vars = fsd.fs_data(self.module).global_vars

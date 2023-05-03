@@ -5,22 +5,15 @@ int main() {
     int add = 1 + 2 + 3;
     int a = sum + 5;
     int b = 4 + add;
-    int d = a + b;
+    int c = a + b;
 
     for(int i = 100; i>b; i--) {
-        for(int j = 0; j<d; j++){
+        for(int j = 0; j<c; j++){
             sum = sum + 1;
         }
     }
 
-    for(int i = 0; i<5; i++){
-            if(i == 2){
-                sum = sum + 1;
-            }
-            else {
-                sum = sum + 2;
-            }
+    for(int i = 0; i<10; i++){
+        sum = sum + 1;
     }
-
-    printf("Loop: %d", sum);
 }

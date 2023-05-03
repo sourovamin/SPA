@@ -1,8 +1,8 @@
-"""Example file for running spa"""
+"""Example file for running spallvm"""
 
-from spa import fs_data as fsd
-from spa import exf_data as exfd
-from spa import fcp
+from spallvm import fs_data as fsd
+from spallvm import exf_data as exfd
+from spallvm import fcp
 import llvmlite.binding as llvm
 import llvmlite.ir as ir
 import sys
